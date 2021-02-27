@@ -920,10 +920,10 @@ public class Database {
         HSSFRow row;
 
         String sql = "INSERT INTO discipline_plan_ed" +
-            "(id_discipline, id_course_dis_plan_ed, id_type, id_type_part, id_module_choose," +
+            "(id_discipline, id_course_disc_plan_ed, id_type, id_type_part, id_module_choose," +
             "number, id_teach_plan, id_podrazdelenie) " + "VALUES(?, ?, ?, ?, ?, ?, ?, ?);";
         String getIdTP = "SELECT id FROM teach_plan ORDER BY id DESC LIMIT 1;";
-        String getLastId = "SELECT id_course_dis_plan_ed FROM discipline_plan_ed ORDER BY id_course_dis_plan_ed DESC LIMIT 1;";
+        String getLastId = "SELECT id_course_disc_plan_ed FROM discipline_plan_ed ORDER BY id_course_disc_plan_ed DESC LIMIT 1;";
         String getTypeId = "SELECT id FROM type WHERE value=?;";
         String getTypePartId = "SELECT id FROM type_part WHERE value=?;";
         String getDisciplineId = "SELECT id FROM discipline WHERE LOWER(REPLACE(name, ' ', ''))=?;";
@@ -951,7 +951,7 @@ public class Database {
             if (result.getRow() == 0)
                 idCDPE = 1;
             else
-                idCDPE = result.getInt("id_course_dis_plan_ed") + 1;
+                idCDPE = result.getInt("id_course_disc_plan_ed") + 1;
 
             System.out.println("\n\nТаблица discipline_plan_ed");
             System.out.println("------------");
@@ -1140,7 +1140,7 @@ public class Database {
                 statement = connection.createStatement();
                 result = statement.executeQuery(getDPE);
                 result.next();
-                int idCDPE = result.getInt("id_course_dis_plan_ed");
+                int idCDPE = result.getInt("id_course_disc_plan_ed");
 
                 while ((row = sheet.getRow(rowCount)) != null) {
                     // Если ячейка в Excel содержит слово ФТД, значит, завершаем парсинг данной таблицы
@@ -1204,6 +1204,12 @@ public class Database {
                         control = 0;
                     }
 
+                    if (zachEd == 0 && lec == 0 && lab == 0 && prac == 0 && sr == 0 && control == 0) {
+                        rowCount++;
+                        idCDPE++;
+                        continue;
+                    }
+
                     // Отправляем все собранные данные в таблицу course_disc_plan_ed
                     ppstatement = connection.prepareStatement(sql);
                     ppstatement.setInt(1, idZachEd);
@@ -1217,11 +1223,6 @@ public class Database {
                     ppstatement.setInt(9, idCDPE);
                     ppstatement.executeUpdate();
 
-                    if (currentSemester == 1) {
-                        System.out.println(disciplineCount + ". В таблицу была добавлена дисциплина: " + row.getCell(2).getStringCellValue());
-                        disciplineCount++;
-                    }
-
                     rowCount++;
                     idCDPE++;
                 }
@@ -1231,7 +1232,6 @@ public class Database {
 
             System.out.println("------------");
             System.out.println("Добавление дисциплин прошло успешно!");
-            System.out.println("Всего было добавлено дисциплин: " + (disciplineCount - 1));
         } catch (SQLException e) {
             System.out.println("------------");
             System.out.println("Что-то пошло не так. Добавление дисциплин в таблицу  " +
@@ -1378,7 +1378,7 @@ public class Database {
         String getFormControl = "SELECT * FROM form_control WHERE id_discipline_plan_ed=?;";
         String getDisciplineName = "SELECT name FROM discipline WHERE id=?;";
         String getDPEIdTP = "SELECT id_teach_plan FROM discipline_plan_ed ORDER BY id_teach_plan DESC LIMIT 1;";
-        String getDPEIdCDPE = "SELECT id_course_dis_plan_ed FROM discipline_plan_ed WHERE id_teach_plan=?;";
+        String getDPEIdCDPE = "SELECT id_course_disc_plan_ed FROM discipline_plan_ed WHERE id_teach_plan=?;";
         String getDPEIdDisc = "SELECT id_discipline FROM discipline_plan_ed WHERE id=?;";
         String getDPEId = "SELECT id FROM discipline_plan_ed WHERE id_teach_plan=?;";
 
@@ -1404,7 +1404,7 @@ public class Database {
             ppstatement.setInt(1, idTeachPlan);
             result = ppstatement.executeQuery();
             result.next();
-            int idCDPE = result.getInt("id_course_dis_plan_ed");
+            int idCDPE = result.getInt("id_course_disc_plan_ed");
 
             int i = 0;
             int j = 1;
